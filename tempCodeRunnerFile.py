@@ -206,6 +206,19 @@ def actualizar_colores_casillas():
     # Llama a pintar_casillas para actualizar los colores de las casillas con "O" y "X"
     pintar_casillas()
 
+def actualizar_alrededores(x, y):
+    for dx in [-1, 0, 1]:
+        for dy in [-1, 0, 1]:
+            # Evitar el centro (posición del jugador)
+            if dx == 0 and dy == 0:
+                continue
+            # Verificar que estamos dentro de los límites del mapa
+            if 0 <= x + dx < len(m) and 0 <= y + dy < len(m[0]):
+                boton_alrededor = botones[x + dx][y + dy]
+                if visitados[x + dx][y + dy]:
+                    boton_alrededor.config(text="X", bg=colores[m[x + dx][y + dy]])
+                else:
+                    boton_alrededor.config(text="O", bg=colores[m[x + dx][y + dy]])
 def pintar_casillas():
     for i in range(len(m)):
         for j in range(len(m[i])):
@@ -261,6 +274,19 @@ def mover_jugador(x, y):
         jugador.x, jugador.y = x, y
         actualizar_colores_casillas()
         botones[jugador.x][jugador.y].config(bg='red', text="X")
+        actualizar_contador()
+
+         # Restablecer la casilla actual a su estado y color originales, y poner "O"
+        boton_anterior = botones[jugador.x][jugador.y]
+        boton_anterior.config(text="O", bg=colores[m[jugador.x][jugador.y]])
+        actualizar_alrededores(jugador.x, jugador.y)
+
+        # Actualizar posición del jugador
+        jugador.x, jugador.y = x, y
+        botones[jugador.x][jugador.y].config(bg='red')
+
+        # Marcar la posición actual del jugador como visitada
+        visitados[jugador.x][jugador.y] = True
         actualizar_contador()
 
         if (jugador.x, jugador.y) == (fin_x, fin_y):
@@ -342,9 +368,10 @@ for i in range(len(m)):
     btn_resolver.grid(row=len(m), column=0, columnspan=len(m[0]), pady=10)
     btn_bfs = tk.Button(ventana, text="Resolver por Amplitud", command=ejecutar_bfs)
     btn_bfs.grid(row=len(m), column=10, columnspan=len(m[0]), pady=10)
-
+    boton.config(text="O")
+    botones.append(fila_botones)
 
 # Ahora que todos los botones están creados, actualizamos sus colores.
-actualizar_colores_casillas()
+ventana.after(100, lambda: actualizar_alrededores(inicio_x, inicio_y))
 
 ventana.mainloop()

@@ -7,7 +7,21 @@ class Jugador:
         self.y = y
         self.tipo = tipo
 
+def actualizar_alrededores(x, y):
+    for dx in [-1, 0, 1]:
+        for dy in [-1, 0, 1]:
+            # Evitar el centro (posición del jugador)
+            if dx == 0 and dy == 0:
+                continue
+            # Verificar que estamos dentro de los límites del mapa
+            if 0 <= x + dx < len(m) and 0 <= y + dy < len(m[0]):
+                boton_alrededor = botones[x + dx][y + dy]
+                if visitados[x + dx][y + dy]:
+                    boton_alrededor.config(text="X", bg=colores[m[x + dx][y + dy]])
+                else:
+                    boton_alrededor.config(text="O", bg=colores[m[x + dx][y + dy]])
 
+    
 def seleccionar_personaje():
     global jugador
     dialogo = tk.Toplevel(ventana)
@@ -124,6 +138,19 @@ def mover_jugador(x, y):
         visitados[jugador.x][jugador.y] = True
         actualizar_contador()
 
+         # Restablecer la casilla actual a su estado y color originales, y poner "O"
+        boton_anterior = botones[jugador.x][jugador.y]
+        boton_anterior.config(text="O", bg=colores[m[jugador.x][jugador.y]])
+        actualizar_alrededores(jugador.x, jugador.y)
+
+        # Actualizar posición del jugador
+        jugador.x, jugador.y = x, y
+        botones[jugador.x][jugador.y].config(bg='red')
+
+        # Marcar la posición actual del jugador como visitada
+        visitados[jugador.x][jugador.y] = True
+        actualizar_contador()
+
         if (jugador.x, jugador.y) == (fin_x, fin_y):
             messagebox.showinfo("Victoria", f"Has llegado al final!\n\nPuntuación: {contador.get()}")
 
@@ -194,10 +221,14 @@ for i in range(len(m)):
             texto = "F"
         else:
             texto = char
-
+        
         boton = tk.Button(ventana, text=texto, bg=color if (i, j) != (jugador.x, jugador.y) else "red", command=lambda x=i, y=j: mostrar_info(x, y))
         boton.grid(row=i, column=j, padx=5, pady=5)
         fila_botones.append(boton)
+        boton.config(text="O")
     botones.append(fila_botones)
+
+# Asegúrese de actualizar los alrededores después de que se inicialice la ventana y los botones
+ventana.after(100, lambda: actualizar_alrededores(inicio_x, inicio_y))
 
 ventana.mainloop()
