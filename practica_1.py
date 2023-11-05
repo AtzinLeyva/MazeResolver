@@ -16,10 +16,13 @@ def actualizar_alrededores(x, y):
             # Verificar que estamos dentro de los límites del mapa
             if 0 <= x + dx < len(m) and 0 <= y + dy < len(m[0]):
                 boton_alrededor = botones[x + dx][y + dy]
+                valor_terreno = m[x + dx][y + dy]
+                # Aquí actualizamos el texto del botón con "X" o "O" según si se ha visitado o no
                 if visitados[x + dx][y + dy]:
-                    boton_alrededor.config(text="X", bg=colores[m[x + dx][y + dy]])
+                    boton_alrededor.config(text=f"X{valor_terreno}")
                 else:
-                    boton_alrededor.config(text="O", bg=colores[m[x + dx][y + dy]])
+                    boton_alrededor.config(text=f"O{valor_terreno}")
+
 
     
 def seleccionar_personaje():
@@ -63,7 +66,7 @@ def actualizar_contador():
 
 def mover_jugador(x, y):
     print(f"Intentando mover al jugador de tipo: {jugador.tipo}")  # Añadir esta línea
-    if 0 <= x < len(m) and 0 <= y < len(m[0]):
+    if (0 <= x < len(m) and 0 <= y < len(m[0])):
         valor_casilla = int(m[x][y])
         if jugador.tipo == 'Humano':
             if m[x][y] == '0':  # Montaña
@@ -225,7 +228,9 @@ for i in range(len(m)):
         boton = tk.Button(ventana, text=texto, bg=color if (i, j) != (jugador.x, jugador.y) else "red", command=lambda x=i, y=j: mostrar_info(x, y))
         boton.grid(row=i, column=j, padx=5, pady=5)
         fila_botones.append(boton)
-        boton.config(text="O")
+        valor_terreno = m[i][j]
+        boton.config(text=f"O{valor_terreno}", bg=colores[valor_terreno])
+        fila_botones.append(boton)
     botones.append(fila_botones)
 
 # Asegúrese de actualizar los alrededores después de que se inicialice la ventana y los botones
