@@ -200,9 +200,7 @@ def actualizar_colores_casillas():
                     botones[i][j].config(bg=colores[m[i][j]], text="O")
             elif visitados[i][j] and botones[i][j]["text"] != "X":
                 botones[i][j].config(text="X" if botones[i][j]["text"] != "I" and botones[i][j]["text"] != "F" else botones[i][j]["text"])
-            else:
-                botones[i][j].config(bg="#FFFFFF" if botones[i][j]["text"] != "I" and botones[i][j]["text"] != "F" else botones[i][j]["bg"])
-
+            
     # Llama a pintar_casillas para actualizar los colores de las casillas con "O" y "X"
     pintar_casillas()
 
