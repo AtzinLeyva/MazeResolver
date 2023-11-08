@@ -3,10 +3,94 @@ from tkinter import simpledialog, messagebox, ttk
 import time
 import networkx as nx
 import matplotlib.pyplot as plt
+
 from collections import deque   
 
 arbol_expansion = nx.DiGraph()
 arbol_expansion_bfs = nx.DiGraph()
+arbol_expansion_astar = nx.DiGraph()
+import heapq
+
+def heuristica(a, b):
+    (x1, y1) = a
+    (x2, y2) = b
+    return abs(x1 - x2) + abs(y1 - y2)
+
+def astar(start_x, start_y):
+    pq = []
+    heapq.heappush(pq, (0 + heuristica((start_x, start_y), (fin_x, fin_y)), 0, None, (start_x, start_y), [(start_x, start_y)]))
+    visitados = set()
+    costes_g = {(start_x, start_y): 0}
+    arbol_expansion_astar.clear()
+    arbol_expansion_astar.add_node((start_x, start_y))
+
+    while pq:
+        _, costo, padre, current, path = heapq.heappop(pq)
+        if current in visitados:
+            continue
+
+        if padre:
+            arbol_expansion_astar.add_edge(padre, current)
+
+        if current == (fin_x, fin_y):
+            return path, costo
+        
+        visitados.add(current)
+        
+        for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+            vecino = (current[0] + dx, current[1] + dy)
+            if 0 <= vecino[0] < len(m) and 0 <= vecino[1] < len(m[0]) and puede_pasar(jugador, m[vecino[0]][vecino[1]]):
+                nuevo_costo = costo + obtener_costo(vecino[0], vecino[1])
+
+                if vecino not in costes_g or nuevo_costo < costes_g[vecino]:
+                    costes_g[vecino] = nuevo_costo
+                    prioridad = nuevo_costo + heuristica(vecino, (fin_x, fin_y))
+                    heapq.heappush(pq, (prioridad, nuevo_costo, current, vecino, path + [vecino]))
+
+    return None, float('inf')  # Si no se encuentra camino
+
+def graficar_arbol_astar():
+    pos = nx.spring_layout(arbol_expansion_astar)  
+    nx.draw(arbol_expansion_astar, pos, with_labels=True, node_size=500, node_color="lightblue", font_size=15)
+    plt.title("Árbol de Expansión A*")
+    plt.show()
+
+def ejecutar_astar():
+    arbol_expansion_astar.clear()
+    arbol_expansion_astar.add_node((jugador.x, jugador.y))
+    path, total_cost = astar(jugador.x, jugador.y)
+
+    if not path:
+        messagebox.showinfo("Información", "No se encontró un camino con A*!")
+        return
+
+    for (x, y) in path:
+        botones[x][y].config(bg='lightblue')
+        ventana.update()
+        time.sleep(0.2)
+
+    botones[jugador.x][jugador.y].config(bg='red')
+    botones[fin_x][fin_y].config(bg='green')
+    messagebox.showinfo("Costo total", f"El costo total del recorrido con A* es: {total_cost}")
+    graficar_arbol_astar()
+
+    arbol_expansion.clear()
+    arbol_expansion.add_node((jugador.x, jugador.y))
+    path, total_cost = astar(jugador.x, jugador.y)
+
+    if not path:
+        messagebox.showinfo("Información", "No se encontró un camino con A*!")
+        return
+
+    for (x, y) in path:
+        botones[x][y].config(bg='lightblue')
+        ventana.update()
+        time.sleep(0.2)
+
+    botones[jugador.x][jugador.y].config(bg='red')
+    botones[fin_x][fin_y].config(bg='green')
+    messagebox.showinfo("Costo total", f"El costo total del recorrido con A* es: {total_cost}")
+    # Opcional: graficar el árbol si es necesario
 
 def bfs(x, y):
     visitados_bfs = [[False for _ in range(len(m[0]))] for _ in range(len(m))]
@@ -357,6 +441,9 @@ for i in range(len(m)):
     btn_resolver.grid(row=len(m), column=0, columnspan=len(m[0]), pady=10)
     btn_bfs = tk.Button(ventana, text="Resolver por Amplitud", command=ejecutar_bfs)
     btn_bfs.grid(row=len(m), column=10, columnspan=len(m[0]), pady=10)
+    btn_astar = tk.Button(ventana, text="Resolver A*", command=ejecutar_astar)
+    btn_astar.grid(row=len(m)+1, column=0, columnspan=len(m[0]), pady=10)
+
 
 
 # Ahora que todos los botones están creados, actualizamos sus colores.
